@@ -24,50 +24,91 @@
 ## Быстрый запуск
 
 ### 1. Клонируй репозиторий
-bash
+
+```bash
 git clone https://github.com/bander148/url-shortener.git
 cd url-shortener
-### 2. Запусти в памяти (без Redis)
+```
+### 2. Запуск в памяти (без Redis) — самый простой вариант
+```bash
 Bashgo run cmd/app/main.go
-Сервер запустится на http://localhost:8080
-### 3. Запусти с Redis (рекомендуется)
-Запусти Redis (самый простой способ — Docker):
+```
+Сервер запустится на:
+http://localhost:8080
+
+### 3. Запуск с Redis (рекомендуется для production-подобного поведения)
+
+Вариант A — через Docker (самый быстрый)
+```bash
 Bashdocker run -d -p 6379:6379 --name redis-local redis:latest
-Или используй Memurai/нативный Redis для Windows.
+```
+Вариант B — без Docker
+Установи Redis для Windows (Memurai или нативная сборка):
+→ https://www.memurai.com/get-memurai (Developer Edition — бесплатно)
 
-Затем запусти проект:
+Или используй WSL / Linux.
+
+После запуска Redis выполни:
+```bash
 Bashgo run cmd/app/main.go
+```
+Сервер снова на http://localhost:8080
 
-Примеры запросов (Postman / curl)
+### Примеры запросов (Postman / curl)
 Создать короткую ссылку
-Bashcurl -X POST -H "Content-Type: application/json" \
--d '{"long_url":"https://google.com"}' \
-http://localhost:8080/shorten
+```text
+Bashcurl -X POST http://localhost:8080/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"long_url": "https://google.com"}'
 Ответ (201 Created):
-JSON{"short_url":"http://localhost:8080/1"}
-Редирект
+JSON{
+  "short_url": "http://localhost:8080/1"
+}
+```
+
+Редирект по короткой ссылке
+
 Открой в браузере:
 http://localhost:8080/1
 → мгновенно перенаправит на https://google.com
+
+### Проверка ошибок
+
 Несуществующий ключ
+
 http://localhost:8080/999 → 404 Not Found
-### Структура проекта
-texturl-shortener/
+```text
+Невалидный URLBashcurl
+ -X POST http://localhost:8080/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"long_url": "google.com"}'→ 400 Bad Request ("Invalid URL")
+
+Пустой long_urlBashcurl
+ -X POST http://localhost:8080/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"long_url": ""}'→ 400 Bad Request ("long_url is required")
+
+```
+
+### Структура проекта 
+```text
+url-shortener/
 ├── cmd/
 │   └── app/
 │       └── main.go           # точка входа + graceful shutdown
 ├── internal/
 │   ├── handlers/             # HTTP-обработчики
-│   │   ├── shorten.go
-│   │   └── redirect.go
+│   │   ├── shorten.go        # POST /shorten — создание короткой ссылки
+│   │   └── redirect.go       # GET /{key} — редирект или 404
 │   ├── storage/              # хранилища (интерфейс + реализации)
 │   │   ├── storage.go        # интерфейс Storage
-│   │   ├── memory.go
-│   │   └── redis.go
-│   └── models/               # структуры данных
+│   │   ├── memory.go         # реализация в памяти (с мьютексом)
+│   │   └── redis.go          # реализация на Redis (go-redis/v9)
+│   └── models/               # общие структуры данных
 │       └── url_data.go
-├── go.mod
+├── go.mod                    # зависимости
 └── README.md
+```
 ### Следующие шаги / улучшения
 - Тесты на handlers (httptest + table-driven)
 - Счётчик кликов по каждой ссылке
