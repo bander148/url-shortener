@@ -24,18 +24,20 @@
 ## Быстрый запуск
 
 ### 1. Клонируй репозиторий
-```bash
+bash
 git clone https://github.com/bander148/url-shortener.git
 cd url-shortener
-2. Запусти в памяти (без Redis)
+### 2. Запусти в памяти (без Redis)
 Bashgo run cmd/app/main.go
 Сервер запустится на http://localhost:8080
-3. Запусти с Redis (рекомендуется)
+### 3. Запусти с Redis (рекомендуется)
 Запусти Redis (самый простой способ — Docker):
 Bashdocker run -d -p 6379:6379 --name redis-local redis:latest
 Или используй Memurai/нативный Redis для Windows.
+
 Затем запусти проект:
 Bashgo run cmd/app/main.go
+
 Примеры запросов (Postman / curl)
 Создать короткую ссылку
 Bashcurl -X POST -H "Content-Type: application/json" \
@@ -49,7 +51,7 @@ http://localhost:8080/1
 → мгновенно перенаправит на https://google.com
 Несуществующий ключ
 http://localhost:8080/999 → 404 Not Found
-Структура проекта
+### Структура проекта
 texturl-shortener/
 ├── cmd/
 │   └── app/
@@ -66,11 +68,10 @@ texturl-shortener/
 │       └── url_data.go
 ├── go.mod
 └── README.md
-Следующие шаги / улучшения
-
-Тесты на handlers (httptest + table-driven)
-Счётчик кликов по каждой ссылке
-TTL для ссылок (автоудаление через 30 дней)
-Деплой на Render / Fly.io / Railway
-Middleware (rate limiting, logging, CORS)
-Конкурентность (worker pool для обработки кликов)
+### Следующие шаги / улучшения
+- Тесты на handlers (httptest + table-driven)
+- Счётчик кликов по каждой ссылке
+- TTL для ссылок (автоудаление через 30 дней)
+- Деплой на Render / Fly.io / Railway
+- Middleware (rate limiting, logging, CORS)
+- Конкурентность (worker pool для обработки кликов)
